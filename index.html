@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pantheon — Sistema de Recepção</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --purple: #5B2D8E;
+    --purple-dark: #3e1d65;
+    --purple-light: #7B4DB0;
+    --purple-pale: #EDE5F5;
+    --purple-bg: #F8F5FC;
+    --gold: #C9A84C;
+    --green: #1D9E75;
+    --green-bg: #E8F5EF;
+    --green-border: #9FE1CB;
+    --amber: #F5C842;
+    --amber-bg: #FFF8E6;
+    --amber-text: #7A5B00;
+    --red-bg: #FCEBEB;
+    --red-border: #F09595;
+    --red-text: #501313;
+    --gray-50: #F8F8F8;
+    --gray-100: #F1F1F1;
+    --gray-200: #E4E4E4;
+    --gray-400: #9E9E9E;
+    --gray-600: #5E5E5E;
+    --gray-800: #222222;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 2px 12px rgba(91,45,142,0.08);
+    --shadow-md: 0 4px 24px rgba(91,45,142,0.13);
+  }
+
+  html, body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--purple-bg);
+    color: var(--gray-800);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── HEADER ── */
+  .topbar {
+    background: white;
+    border-bottom: 3px solid var(--purple);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(91,45,142,0.06);
+  }
+  .logo-area { display: flex; align-items: center; gap: 14px; }
+  .logo-circle {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--purple);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 600; font-size: 16px; letter-spacing: 0.5px;
+  }
+  .logo-text { line-height: 1.2; }
+  .logo-text strong { display: block; font-size: 16px; font-weight: 600; color: var(--purple); }
+  .logo-text span { font-size: 11px; color: var(--gray-400); letter-spacing: 0.08em; text-transform: uppercase; }
+  .topbar-right { font-size: 12px; color: var(--gray-400); }
+
+  /* ── LAYOUT ── */
+  .page { max-width: 860px; margin: 0 auto; padding: 32px 20px 60px; }
+
+  /* ── CARD ── */
+  .card {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px 28px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-size: 13px; font-weight: 600; color: var(--purple);
+    text-transform: uppercase; letter-spacing: 0.07em;
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 16px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--gray-100);
+  }
+  .card-title svg { flex-shrink: 0; }
+
+  /* ── SELECTS ── */
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 12px; font-weight: 500; color: var(--gray-600); margin-bottom: 6px; }
+  .select-wrap { position: relative; }
+  .select-wrap::after {
+    content: '';
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid var(--purple);
+    pointer-events: none;
+  }
+  select {
+    width: 100%; padding: 11px 40px 11px 14px;
+    font-family: inherit; font-size: 14px; font-weight: 400;
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    background: white; color: var(--gray-800);
+    appearance: none; cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  select:focus { outline: none; border-color: var(--purple); box-shadow: 0 0 0 3px rgba(91,45,142,0.1); }
+  select:hover { border-color: var(--purple-light); }
+
+  /* ── INFO GRID ── */
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  @media (max-width: 500px) { .info-grid { grid-template-columns: 1fr; } }
+  .info-tile {
+    background: var(--purple-bg);
+    border: 1px solid rgba(91,45,142,0.1);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+  }
+  .info-tile .t-label { font-size: 11px; color: var(--gray-400); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .info-tile .t-value { font-size: 15px; font-weight: 600; color: var(--purple); }
+  .info-tile .t-value.green { color: var(--green); }
+  .info-tile .t-value.dark { color: var(--gray-800); }
+
+  /* ── BADGES / ALERTS ── */
+  .alert {
+    border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 16px;
+    font-size: 13px; display: flex; gap: 10px; align-items: flex-start;
+  }
+  .alert svg { flex-shrink: 0; margin-top: 1px; }
+  .alert.warn { background: var(--amber-bg); border: 1px solid var(--amber); color: var(--amber-text); }
+  .alert.danger { background: var(--red-bg); border: 1px solid var(--red-border); color: var(--red-text); }
+  .alert.info { background: var(--purple-pale); border: 1px solid rgba(91,45,142,0.2); color: var(--purple-dark); }
+  .alert ul { padding-left: 16px; margin-top: 4px; line-height: 1.8; }
+  .alert strong { font-weight: 600; display: block; margin-bottom: 2px; }
+
+  /* ── TRIAGEM TABLE ── */
+  .section-label {
+    font-size: 12px; font-weight: 600; color: var(--purple);
+    text-transform: uppercase; letter-spacing: 0.07em;
+    border-left: 3px solid var(--purple); padding-left: 10px;
+    margin: 20px 0 12px;
+  }
+  .table-wrap { overflow-x: auto; border-radius: var(--radius-sm); border: 1px solid var(--gray-200); margin-bottom: 20px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead tr { background: var(--purple); }
+  thead th { padding: 10px 14px; text-align: left; font-weight: 500; font-size: 11px; color: white; letter-spacing: 0.05em; text-transform: uppercase; }
+  tbody tr { border-bottom: 1px solid var(--gray-100); transition: background 0.1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--purple-bg); }
+  tbody td { padding: 10px 14px; vertical-align: top; }
+  .td-code { font-family: 'Courier New', monospace; font-weight: 600; color: var(--purple); font-size: 13px; white-space: nowrap; }
+  .td-desc { color: var(--gray-800); line-height: 1.4; }
+  .td-obs { font-size: 11px; color: var(--amber-text); margin-top: 3px; }
+  .qty-pill {
+    display: inline-block; background: var(--purple-pale); color: var(--purple);
+    font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 99px;
+  }
+  .status-auth {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--amber-bg); color: var(--amber-text);
+    border: 1px solid var(--amber); font-size: 11px; font-weight: 500;
+    padding: 3px 10px; border-radius: 99px; white-space: nowrap;
+  }
+  .status-geriatria {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--purple-pale); color: var(--purple);
+    border: 1px solid rgba(91,45,142,0.3); font-size: 11px; font-weight: 500;
+    padding: 3px 10px; border-radius: 99px; white-space: nowrap;
+  }
+  tr.row-geriatria td { background: #F5F0FC; }
+
+  /* ── BUTTONS ── */
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 18px; border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    cursor: pointer; border: none; transition: all 0.15s;
+  }
+  .btn-primary { background: var(--purple); color: white; }
+  .btn-primary:hover { background: var(--purple-dark); }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-outline { background: white; color: var(--purple); border: 1.5px solid var(--purple); }
+  .btn-outline:hover { background: var(--purple-pale); }
+
+  /* ── CHECKLIST ── */
+  .checklist { background: var(--green-bg); border: 1px solid var(--green-border); border-radius: var(--radius-sm); padding: 16px 18px; }
+  .checklist-title { font-size: 12px; font-weight: 600; color: #085041; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; display: flex; align-items: center; gap: 7px; }
+  .checklist-item { display: flex; align-items: flex-start; gap: 9px; font-size: 13px; color: #085041; margin-bottom: 8px; cursor: pointer; user-select: none; }
+  .checklist-item:last-child { margin-bottom: 0; }
+  .checklist-item input[type=checkbox] { width: 15px; height: 15px; margin-top: 1px; accent-color: var(--green); cursor: pointer; flex-shrink: 0; }
+  .checklist-item span { line-height: 1.4; }
+
+  /* ── SOLICITANTE ── */
+  .solicitante-bar {
+    background: var(--purple-pale); border: 1px solid rgba(91,45,142,0.2);
+    border-radius: var(--radius-sm); padding: 10px 16px;
+    font-size: 12px; color: var(--purple-dark); margin-bottom: 16px;
+    display: flex; gap: 16px; flex-wrap: wrap;
+  }
+  .solicitante-bar b { font-weight: 600; }
+
+  /* ── DIVIDER ── */
+  .divider { border: none; border-top: 1px solid var(--gray-100); margin: 20px 0; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+    background: var(--purple-dark); color: white;
+    padding: 11px 22px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500;
+    box-shadow: var(--shadow-md); z-index: 9999;
+    opacity: 0; transition: opacity 0.25s; pointer-events: none;
+  }
+
+  /* ── STEP BADGE ── */
+  .step-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--purple); color: white; font-size: 11px; font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .hidden { display: none !important; }
+
+  /* ── PARTICULAR ── */
+  .part-card { background: var(--purple-bg); border: 1px solid rgba(91,45,142,0.15); border-radius: var(--radius-sm); padding: 16px 18px; margin-bottom: 16px; }
+  .part-card .big-val { font-size: 28px; font-weight: 600; color: var(--green); margin: 4px 0; }
+  .part-card .sub { font-size: 12px; color: var(--gray-400); }
+
+  /* ── TABS ── */
+  .tab-nav {
+    max-width: 860px; margin: 0 auto;
+    display: flex; gap: 4px; padding: 16px 20px 0;
+  }
+  .tab-btn {
+    padding: 9px 20px; border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    cursor: pointer; border: 1px solid transparent;
+    border-bottom: none; background: transparent; color: var(--gray-400);
+    transition: all 0.15s;
+  }
+  .tab-btn:hover { color: var(--purple); background: var(--purple-pale); }
+  .tab-btn.active {
+    background: white; color: var(--purple);
+    border-color: var(--gray-200); border-bottom-color: white;
+    box-shadow: 0 -2px 0 var(--purple) inset;
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── MEDICAÇÕES ── */
+  .med-group-title {
+    font-size: 11px; font-weight: 600; color: var(--gray-400);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    padding: 10px 0 6px; margin-top: 4px;
+  }
+  .med-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 12px; border-radius: var(--radius-sm);
+    border: 1px solid var(--gray-200); margin-bottom: 6px;
+    cursor: pointer; transition: all 0.12s; background: white; gap: 10px;
+  }
+  .med-item:hover { border-color: var(--purple-light); background: var(--purple-pale); }
+  .med-item.selected { border-color: var(--purple); background: var(--purple-pale); }
+  .med-item input[type=checkbox] { accent-color: var(--purple); width: 16px; height: 16px; flex-shrink: 0; cursor: pointer; }
+  .med-item-name { font-size: 13px; color: var(--gray-800); flex: 1; }
+  .med-item-price { font-size: 13px; font-weight: 600; color: var(--purple); white-space: nowrap; }
+  .med-qty {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .med-qty button {
+    width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--gray-200);
+    background: white; color: var(--purple); font-size: 16px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    line-height: 1; transition: all 0.1s;
+  }
+  .med-qty button:hover { background: var(--purple); color: white; border-color: var(--purple); }
+  .med-qty span { font-size: 13px; font-weight: 600; min-width: 18px; text-align: center; color: var(--gray-800); }
+
+  .resumo-box {
+    position: sticky; bottom: 20px;
+    background: white; border-radius: var(--radius);
+    box-shadow: var(--shadow-md); border: 1.5px solid var(--purple);
+    padding: 16px 20px; margin-top: 20px;
+  }
+  .resumo-total { font-size: 26px; font-weight: 600; color: var(--purple); margin: 2px 0 12px; }
+  .resumo-label { font-size: 11px; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.06em; }
+  .parcelas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 7px; margin-bottom: 12px; }
+  .parcela-tile {
+    background: var(--purple-bg); border: 1px solid rgba(91,45,142,0.15);
+    border-radius: var(--radius-sm); padding: 8px 10px; text-align: center;
+  }
+  .parcela-tile.com-juros { background: #FFF8E6; border-color: #F5C842; }
+  .parcela-tile .p-label { font-size: 10px; color: var(--gray-400); margin-bottom: 1px; }
+  .parcela-tile.com-juros .p-label { color: var(--amber-text); }
+  .parcela-tile .p-val { font-size: 13px; font-weight: 600; color: var(--purple); }
+  .parcela-tile.com-juros .p-val { color: var(--amber-text); }
+  .parcela-tile .p-total { font-size: 10px; color: var(--gray-400); margin-top: 1px; }
+  .parcela-tile .p-juros-tag { font-size: 9px; color: var(--amber-text); font-weight: 500; margin-top: 2px; }
+  .desconto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .desconto-tile {
+    border-radius: var(--radius-sm); padding: 10px 12px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .desconto-tile.pix { background: var(--green-bg); border: 1px solid var(--green-border); }
+  .desconto-tile.gerente { background: var(--purple-pale); border: 1px solid rgba(91,45,142,0.25); }
+  .desconto-tile .d-label { font-size: 12px; font-weight: 500; }
+  .desconto-tile.pix .d-label { color: #085041; }
+  .desconto-tile.gerente .d-label { color: var(--purple-dark); }
+  .desconto-tile .d-val { font-size: 14px; font-weight: 600; }
+  .desconto-tile.pix .d-val { color: var(--green); }
+  .desconto-tile.gerente .d-val { color: var(--purple); }
+  /* Itens colapsáveis */
+  .resumo-itens-wrap { margin-bottom: 10px; }
+  .resumo-itens-toggle {
+    display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer; padding: 4px 0; user-select: none;
+  }
+  .resumo-itens-toggle:hover .toggle-label { color: var(--purple); }
+  .toggle-label { font-size: 11px; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.06em; transition: color 0.15s; }
+  .toggle-arrow { font-size: 11px; color: var(--gray-400); transition: transform 0.2s; }
+  .toggle-arrow.open { transform: rotate(180deg); }
+  .resumo-itens { overflow: hidden; max-height: 0; transition: max-height 0.25s ease; }
+  .resumo-itens.expanded { max-height: 400px; }
+  .resumo-item-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--gray-600); padding: 3px 0; border-bottom: 0.5px solid var(--gray-100); }
+  .resumo-item-row:last-child { border-bottom: none; }
+  .sem-parcela-msg { font-size: 12px; color: var(--gray-400); padding: 6px 0 10px; font-style: italic; }
+  .btn-limpar { background: none; border: 1px solid var(--gray-200); color: var(--gray-600); font-family: inherit; font-size: 12px; padding: 6px 14px; border-radius: var(--radius-sm); cursor: pointer; margin-top: 10px; }
+  .btn-limpar:hover { border-color: var(--red-border); color: var(--red-text); }
+  .empty-resumo { text-align: center; color: var(--gray-400); font-size: 13px; padding: 8px 0; }
+  .resumo-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
+
+  .tab-nav { flex-wrap: wrap; }
+
+  /* ── CONVÊNIOS LIST ── */
+  .conv-search {
+    width: 100%; padding: 9px 14px; font-size: 14px; font-family: inherit;
+    border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm);
+    margin-bottom: 14px; background: white; color: var(--gray-800);
+  }
+  .conv-search:focus { outline: none; border-color: var(--purple); box-shadow: 0 0 0 3px rgba(91,45,142,0.1); }
+  .conv-list { list-style: none; column-count: 2; column-gap: 16px; }
+  .conv-list li {
+    font-size: 13px; color: var(--gray-700);
+    padding: 5px 8px; border-radius: var(--radius-sm);
+    display: flex; align-items: center; gap: 7px; break-inside: avoid;
+    margin-bottom: 2px;
+  }
+  .conv-list li::before {
+    content: ''; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--purple); flex-shrink: 0;
+  }
+  .conv-list li.hidden-item { display: none; }
+  .conv-count { font-size: 12px; color: var(--gray-400); margin-bottom: 10px; }
+  @media (max-width: 500px) { .conv-list { column-count: 1; } }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    .topbar { padding: 0 16px; }
+    .tab-nav { padding: 12px 12px 0; }
+    .page { padding: 16px 12px 60px; }
+    .card { padding: 16px; }
+    .btn-row { flex-direction: column; }
+    .btn { justify-content: center; }
+    .parcelas-grid { grid-template-columns: 1fr 1fr; }
+    .desconto-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo-area">
+    <div class="logo-circle">P</div>
+    <div class="logo-text">
+      <strong>Pantheon</strong>
+      <span>Emagrecimento · Hipertrofia · Longevidade</span>
+    </div>
+  </div>
+  <div class="topbar-right" id="clock"></div>
+</header>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" id="tabbtn-consulta" onclick="switchTab('consulta')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-2px;margin-right:5px"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    Consulta
+  </button>
+  <button class="tab-btn" id="tabbtn-medicacoes" onclick="switchTab('medicacoes')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-2px;margin-right:5px"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+    Medicações
+  </button>
+  <button class="tab-btn" id="tabbtn-ultrassom" onclick="switchTab('ultrassom')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-2px;margin-right:5px"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+    Ultrassom
+  </button>
+  <button class="tab-btn" id="tabbtn-laboratorio" onclick="switchTab('laboratorio')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-2px;margin-right:5px"><path d="M9 3v11l-4 5h14l-4-5V3"/><line x1="6" y1="7" x2="18" y2="7"/></svg>
+    Laboratório
+  </button>
+  <button class="tab-btn" id="tabbtn-polissonografia" onclick="switchTab('polissonografia')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-2px;margin-right:5px"><path d="M2 12h3l3-8 4 16 3-8h7"/></svg>
+    Polissonografia
+  </button>
+</nav>
+
+<div id="tab-consulta" class="tab-panel active">
+<div class="page">
+
+  <!-- STEP 1 -->
+  <div class="card">
+    <div class="card-title">
+      <span class="step-badge">1</span>
+      Selecionar médico
+    </div>
+    <div class="field">
+      <label for="sel-medico">Profissional</label>
+      <div class="select-wrap">
+        <select id="sel-medico" onchange="onMedicoChange()">
+          <option value="">— Selecione o profissional —</option>
+          <option value="ANALICE">ANALICE RODRIGUES CARMO — Nutróloga</option>
+          <option value="DANIELLE">DANIELLE CANDIA BARRA — Nutróloga / Alergista</option>
+          <option value="FERNANDO">FERNANDO MARTINS ARAUJO VIEIRA — Nutrólogo</option>
+          <option value="JESSICA">JÉSSICA DE SOUZA COSTA — Nutricionista</option>
+          <option value="JOAO">JOÃO SILVA MESQUITA FILHO — Endocrinologista</option>
+          <option value="JUAN">JUAN MATIAS BORGES — Nutrólogo</option>
+          <option value="PATRICIA">PATRICIA NEIVA MARQUES TORRES — Geriatra</option>
+          <option value="PAULO">PAULO RICARDO OLIVEIRA DE LIMA JÚNIOR — Endocrinologista</option>
+          <option value="RAQUELLY">RAQUELLY LENY MARQUES INOMATA — Nutróloga</option>
+          <option value="REBECCA">REBECCA MARIA ESTEVES BARBOSA SIQUEIRA — Nutróloga</option>
+          <option value="WILLIAN">WILLIAN VAGNER — Nutricionista</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ESPECIALIDADE DANIELLE -->
+  <div class="card hidden" id="card-especialidade-danielle">
+    <div class="card-title">
+      <span class="step-badge">2</span>
+      Selecionar especialidade
+    </div>
+    <div class="field">
+      <label for="sel-especialidade">Especialidade do atendimento</label>
+      <div class="select-wrap">
+        <select id="sel-especialidade" onchange="onEspecialidadeChange()">
+          <option value="">— Selecione a especialidade —</option>
+          <option value="nutrologo">Nutrologia</option>
+          <option value="alergia">Alergia</option>
+        </select>
+      </div>
+    </div>
+    <div id="alert-alergia-particular" class="alert danger hidden" style="margin-top:4px;margin-bottom:0">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <div><strong>Alergia — Somente particular</strong>A Dra. Danielle atende Alergia exclusivamente como particular (R$ 450,00). Não há cobertura por convênio para esta especialidade.</div>
+    </div>
+  </div>
+
+  <!-- STEP 2 / 3 -->
+  <div class="card hidden" id="card-convenio">
+    <div class="card-title">
+      <span class="step-badge" id="badge-convenio">2</span>
+      Selecionar convênio
+    </div>
+    <div class="field">
+      <label for="sel-convenio">Convênio do paciente</label>
+      <div class="select-wrap">
+        <select id="sel-convenio" onchange="onConvenioChange()">
+          <option value="">— Selecione o convênio —</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTADO CONVÊNIO -->
+  <div id="area-resultado" class="hidden">
+
+    <div id="alerta-idade" class="alert danger hidden">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <div><strong>Atenção — Idade mínima</strong>Este profissional atende pacientes a partir de <span id="idade-txt"></span> anos.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        Dados da consulta
+      </div>
+
+      <div class="info-grid">
+        <div class="info-tile">
+          <div class="t-label">Tipo de guia</div>
+          <div class="t-value" id="res-guia">—</div>
+        </div>
+        <div class="info-tile">
+          <div class="t-label">Código de consulta</div>
+          <div class="t-value" id="res-cod">—</div>
+        </div>
+        <div class="info-tile">
+          <div class="t-label">Valor convênio</div>
+          <div class="t-value green" id="res-valor">—</div>
+        </div>
+        <div class="info-tile">
+          <div class="t-label">Prazo de retorno</div>
+          <div class="t-value dark">30 dias</div>
+        </div>
+      </div>
+
+      <div id="solicitante-bar" class="solicitante-bar hidden">
+        <span><b>Solicitante:</b> Raquelly Leny — CRMDF 26549</span>
+        <span><b>Executante:</b> Jéssica de Souza Costa — CRNDF 22012</span>
+      </div>
+
+      <div id="alert-excecao" class="alert warn hidden">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div><strong>Exceções para este convênio</strong><ul id="excecao-lista"></ul></div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="section-label">Códigos de triagem</div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Descrição</th>
+              <th>Qtd</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="triagem-body"></tbody>
+        </table>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="copiarTriagem()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copiar códigos de triagem
+        </button>
+        <button class="btn btn-outline" onclick="copiarConsulta()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copiar código consulta
+        </button>
+      </div>
+
+      <div class="checklist">
+        <div class="checklist-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Checklist final — AMHPDF
+        </div>
+        <label class="checklist-item"><input type="checkbox"><span>Conferir convênio do paciente</span></label>
+        <label class="checklist-item"><input type="checkbox"><span>Verificar se há exceção aplicável para este convênio</span></label>
+        <label class="checklist-item"><input type="checkbox"><span>Ajustar quantidades quando necessário</span></label>
+        <label class="checklist-item"><input type="checkbox"><span>Verificar idade mínima do paciente</span></label>
+        <label class="checklist-item"><input type="checkbox"><span>Confirmar e lançar os códigos na AMHPDF</span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTADO ALERGIA PARTICULAR -->
+  <div id="area-alergia-particular" class="hidden">
+    <div class="card">
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Atendimento particular — Alergia
+      </div>
+      <div class="part-card">
+        <div class="sub">Valor da consulta</div>
+        <div class="big-val">R$ 450,00</div>
+        <div class="sub">Retorno: 30 dias · Sem necessidade de guia</div>
+      </div>
+      <div class="alert danger" style="margin-bottom:0">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div><strong>Convênio não aceito para Alergia</strong>A Dra. Danielle atende Alergia somente como particular. Nenhum convênio cobre esta especialidade.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTADO PARTICULAR -->
+  <div id="area-particular" class="hidden">
+    <div class="card">
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Atendimento particular
+      </div>
+      <div class="part-card">
+        <div class="sub">Valor da consulta</div>
+        <div class="big-val" id="part-valor">—</div>
+        <div class="sub">Retorno: 30 dias · Sem necessidade de guia</div>
+      </div>
+      <div id="part-danielle" class="alert warn hidden">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div><strong>Danielle Candia Barra</strong>Alergia: somente particular (R$ 450,00) · Nutrologia: R$ 550,00</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div><!-- end tab-consulta -->
+
+<div id="tab-medicacoes" class="tab-panel">
+<div class="page" style="padding-top:24px">
+
+  <div class="card">
+    <div class="card-title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+      Selecionar medicações
+    </div>
+
+    <div class="med-group-title">Ampola Tirzepatida</div>
+    <div id="med-list-tirzepatida"></div>
+
+    <div class="med-group-title">Ampola Semaglutida</div>
+    <div id="med-list-semaglutida"></div>
+
+    <div class="med-group-title">Caneta</div>
+    <div id="med-list-caneta"></div>
+
+    <div class="med-group-title">Medicações gerais</div>
+    <div id="med-list-geral"></div>
+  </div>
+
+  <div class="resumo-box" id="resumo-box">
+    <div id="resumo-vazio" class="empty-resumo">Selecione medicações acima para calcular o total.</div>
+    <div id="resumo-conteudo" class="hidden">
+
+      <div class="resumo-itens-wrap">
+        <div class="resumo-itens-toggle" onclick="toggleItens()">
+          <span class="toggle-label">Itens selecionados (<span id="resumo-count">0</span>)</span>
+          <span class="toggle-arrow" id="toggle-arrow">▼</span>
+        </div>
+        <div class="resumo-itens" id="resumo-itens"></div>
+      </div>
+
+      <div class="resumo-header">
+        <div class="resumo-label">Total</div>
+        <button class="btn-limpar" style="margin-top:0;padding:3px 10px;font-size:11px" onclick="limparMedicacoes()">✕ Limpar</button>
+      </div>
+      <div class="resumo-total" id="resumo-total">R$ 0,00</div>
+
+      <div class="resumo-label" style="margin-bottom:8px">Parcelamento</div>
+      <div id="parcelas-grid"></div>
+
+      <div class="resumo-label" style="margin-bottom:8px;margin-top:14px">Descontos</div>
+      <div class="desconto-grid">
+        <div class="desconto-tile pix">
+          <div>
+            <div class="d-label">Pix / Débito / Dinheiro</div>
+            <div style="font-size:10px;color:#085041">5% de desconto</div>
+          </div>
+          <div class="d-val" id="val-pix">—</div>
+        </div>
+        <div class="desconto-tile gerente">
+          <div>
+            <div class="d-label">Desconto gerente</div>
+            <div style="font-size:10px;color:var(--purple-dark)">10% — autorização gerente</div>
+          </div>
+          <div class="d-val" id="val-gerente">—</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</div><!-- end tab-medicacoes -->
+
+<div id="tab-ultrassom" class="tab-panel">
+<div class="page" style="padding-top:24px">
+  <div class="card">
+    <div class="card-title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+      Convênios — Ultrassonografia (Ecografia)
+    </div>
+    <p class="conv-count" id="count-ultrassom"></p>
+    <input class="conv-search" type="text" placeholder="Buscar convênio..." oninput="filtrarConv('ultrassom',this.value)">
+    <ul class="conv-list" id="list-ultrassom"></ul>
+  </div>
+</div>
+</div><!-- end tab-ultrassom -->
+
+<div id="tab-laboratorio" class="tab-panel">
+<div class="page" style="padding-top:24px">
+  <div class="card">
+    <div class="card-title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3v11l-4 5h14l-4-5V3"/><line x1="6" y1="7" x2="18" y2="7"/></svg>
+      Convênios — Laboratório (Bee Lab)
+    </div>
+    <p class="conv-count" id="count-laboratorio"></p>
+    <input class="conv-search" type="text" placeholder="Buscar convênio..." oninput="filtrarConv('laboratorio',this.value)">
+    <ul class="conv-list" id="list-laboratorio"></ul>
+  </div>
+</div>
+</div><!-- end tab-laboratorio -->
+
+<div id="tab-polissonografia" class="tab-panel">
+<div class="page" style="padding-top:24px">
+  <div class="card">
+    <div class="card-title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h3l3-8 4 16 3-8h7"/></svg>
+      Convênios — Polissonografia
+    </div>
+    <p class="conv-count" id="count-polissonografia"></p>
+    <input class="conv-search" type="text" placeholder="Buscar convênio..." oninput="filtrarConv('polissonografia',this.value)">
+    <ul class="conv-list" id="list-polissonografia"></ul>
+  </div>
+</div>
+</div><!-- end tab-polissonografia -->
+
+<script>
+const MEDICOS = {
+  ANALICE:  { idadeMin: 16, valorPart: 450, tipo: "nutrologo" },
+  DANIELLE: { idadeMin: null, valorPart: 550, tipo: "nutrologo", danielle: true },
+  FERNANDO: { idadeMin: 16, valorPart: 450, tipo: "nutrologo" },
+  JESSICA:  { idadeMin: 15, valorPart: 250, tipo: "nutricionista" },
+  JOAO:     { idadeMin: 16, valorPart: 700, tipo: "nutrologo" },
+  JUAN:     { idadeMin: 16, valorPart: 450, tipo: "nutrologo" },
+  PATRICIA: { idadeMin: 16, valorPart: 650, tipo: "nutrologo", geriatria: true },
+  PAULO:    { idadeMin: 16, valorPart: 450, tipo: "nutrologo" },
+  RAQUELLY: { idadeMin: 16, valorPart: 450, tipo: "nutrologo" },
+  REBECCA:  { idadeMin: 16, valorPart: 450, tipo: "nutrologo" },
+  WILLIAN:  { idadeMin: 14, valorPart: 350, tipo: "nutricionista" },
+};
+
+const CONV_NUT = {
+  "AFEB BRASAL":{"tipo":"Não Tiss - Atendimento","cod":"00.01.001-4","valor":159.93},
+  "AFFEGO":{"tipo":"Consulta","cod":"1.01.01.01-2","valor":150.07},
+  "ANAFE SAÚDE":{"tipo":"Consulta","cod":"1.01.01.01-2","valor":106.60},
+  "BACEN":{"tipo":"Consulta","cod":"1.01.01.578","valor":154.54},
+  "BRB (SAÚDE BRB)":{"tipo":"Consulta","cod":"1.01.01.01-2","valor":157.06},
+  "CAEME - GO":{"tipo":"Consulta","cod":"1.01.01.01-2","valor":137.10},
+  "CAESAN":{"tipo":"Consulta","cod":"10.10.101-2","valor":125.00},
+  "CAMED":{"tipo":"Consulta","cod":"1.01.01.01-2","valor":150.24},
+  "CARE PLUS":{"tipo":"Consulta","cod":"1.00.00.05-5","valor":157.02},
+  "CASEC (CODEVASF)":{"tipo":"Consulta","cod":"1.01.01.01-2","valor":151.53},
+  "CASEMBRAPA (EMBRAPA)":{"tipo":"Consulta","cod":"99.02.050-3","valor":146.86},
+  "CBMDF":{"tipo":"Não Tiss Atendimento","cod":"1.01.01.012","valor":88.29},
+  "CLIQUE MÉDICOS":{"tipo":"Clique Médicos","cod":"1.01.01.01-2","valor":154.66},
+  "CNTI":{"tipo":"Não Tiss Atendimento","cod":"00.01.001-4","valor":152.77},
+  "CONAB":{"tipo":"Consulta","cod":"1.01.01.01-2","valor":169.37},
+  "EMBRATEL (TELOS)":{"tipo":"Consulta","cod":"1.01.01.01-2","valor":156.10},
+  "FAPES (BNDES)":{"tipo":"Consulta","cod":"1.01.01.01-2","valor":167.47},
+  "FASCAL":{"tipo":"Consulta","cod":"1.01.01.01-2","valor":154.66},
+  "GDF SAÚDE":{"tipo":"Consulta","cod":"1.01.01.01-2","valor":95.35},
+  "GRAVIA":{"tipo":"Não Tiss Atendimento","cod":"00.01.001-4","valor":147.46},
+  "LIFE EMPRESARIAL":{"tipo":"Consulta","cod":"1.01.01.01-2","valor":140.64},
+  "LUMINAR SAÚDE (EVIDA)":{"tipo":"Consulta","cod":"1.01.01.01-2","valor":147.05},
+  "NOTRE DAME":{"tipo":"Sp/sadt","cod":"1.01.01.01-2","valor":118.00},
+  "OMINT SAÚDE":{"tipo":"Consulta","cod":"70.00.000-1","valor":129.97},
+  "PF SAÚDE (POLÍCIA FEDERAL)":{"tipo":"Consulta","cod":"70.01.080-0","valor":142.17},
+  "PLAN ASSISTE (MPU)":{"tipo":"Sp/sadt","cod":"700.01.080-0","valor":160.85},
+  "PLAS/JMU (STM)":{"tipo":"Sp/sadt","cod":"90.05.029-0","valor":160.85},
+  "PROASA":{"tipo":"Consulta","cod":"1.01.01.01-2","valor":137.33},
+  "PRÓ-SAÚDE (CÂMARA DOS DEPUTADOS)":{"tipo":"Sp/sadt","cod":"70.00.108-00","valor":160.85},
+  "PRÓ-SAÚDE (TJDFT)":{"tipo":"Consulta","cod":"9.00.50.29-0","valor":160.85},
+  "PRÓ-SER (STJ)":{"tipo":"Sp/sadt","cod":"90.05.029-0","valor":160.85},
+  "PRÓ-SOCIAL (TRF)":{"tipo":"Sp/sadt","cod":"90.05.029-0","valor":160.85},
+  "REAL GRANDEZA (DEMAIS PLANOS)":{"tipo":"Consulta","cod":"1.01.01.01-2","valor":120.00},
+  "REAL GRANDEZA (SALVUS E SALUTEM)":{"tipo":"Consulta","cod":"10.10.101-2","valor":100.00},
+  "SAÚDE CAIXA":{"tipo":"Consulta","cod":"1.01.01.01-2","valor":134.15},
+  "SAÚDE PETROBRAS":{"tipo":"Sp/sadt","cod":"0.00.10.82-0","valor":140.03},
+  "SERPRO":{"tipo":"Consulta","cod":"1.01.01.01-2","valor":165.86},
+  "SIS SENADO":{"tipo":"Consulta","cod":"00.01.080-0","valor":148.69},
+  "STF-MED (STF)":{"tipo":"Sp/sadt","cod":"00.01.022-6","valor":160.85},
+  "TRE SAÚDE":{"tipo":"Sp/sadt","cod":"90.05.029-0","valor":160.85},
+  "TRT SAÚDE":{"tipo":"Sp/sadt","cod":"90.05.029-0","valor":160.85},
+  "TST SAÚDE":{"tipo":"Consulta","cod":"9.30.10.01-9","valor":160.85},
+  "UNAFISCO SAÚDE (PREMIUM)":{"tipo":"Consulta","cod":"1.01.01.01-2","valor":143.08},
+  "AMIL REEMBOLSO":{"tipo":"Consulta","cod":"1.01.01.01-2","valor":0},
+};
+
+const CONV_NUTRI = {
+  "AFEB BRASAL":{"tipo":"Não Tiss - Atendimento","cod":"70.99.011-5","valor":97.74},
+  "AFFEGO":{"tipo":"Sp/sadt","cod":"50.00.056-0","valor":86.45},
+  "ANAFE SAÚDE":{"tipo":"Sp/sadt","cod":"5.00.00.56-0","valor":73.78},
+  "BACEN":{"tipo":"Sp/sadt","cod":"5.00.00.56-0","valor":90.00},
+  "BRB (SAÚDE BRB)":{"tipo":"Sp/sadt","cod":"5.00.00.56-0","valor":82.37},
+  "CAESAN":{"tipo":"Sp/sadt","cod":"5.00.00.56-0","valor":63.18},
+  "CARE PLUS":{"tipo":"Consulta","cod":"1.00.10.05-6","valor":89.32},
+  "CASEC (CODEVASF)":{"tipo":"Sp/sadt","cod":"50.00.056-0","valor":88.32},
+  "CASEMBRAPA (EMBRAPA)":{"tipo":"Sp/sadt","cod":"50.00.056-0","valor":59.91},
+  "CLIQUE MÉDICOS":{"tipo":"Clique Médicos","cod":"5.00.00.56-0","valor":60.00},
+  "CONAB":{"tipo":"Consulta","cod":"50.00.069-1","valor":81.57},
+  "EMBRATEL (TELOS)":{"tipo":"Consulta","cod":"5.00.00.56-0","valor":90.98},
+  "FASCAL":{"tipo":"Consulta","cod":"1.01.01.01-2","valor":80.01},
+  "GDF SAÚDE":{"tipo":"Sp/sadt","cod":"50.00.056-0","valor":49.59},
+  "LIFE EMPRESARIAL":{"tipo":"Sp/sadt","cod":"50.00.056-0","valor":78.73},
+  "OMINT SAÚDE":{"tipo":"Sp/sadt","cod":"50.00.056-0","valor":69.68},
+  "PF SAÚDE (POLÍCIA FEDERAL)":{"tipo":"Sp/sadt","cod":"50.00.056-0","valor":66.00},
+  "PLAN ASSISTE (MPU)":{"tipo":"Sp/sadt","cod":"17.01.001-1","valor":75.93},
+  "PLAS/JMU (STM)":{"tipo":"Sp/sadt","cod":"90.05.022-3","valor":121.34},
+  "PROASA":{"tipo":"Sp/sadt","cod":"50.00.056-0","valor":77.57},
+  "PRÓ-SAÚDE (CÂMARA DOS DEPUTADOS)":{"tipo":"Sp/sadt","cod":"17.01.001-1","valor":75.93},
+  "PRÓ-SAÚDE (TJDFT)":{"tipo":"Sp/sadt","cod":"90.05.022-3","valor":118.42},
+  "PRÓ-SOCIAL (TRF)":{"tipo":"Sp/sadt","cod":"90.05.022-3","valor":121.34},
+  "REAL GRANDEZA (DEMAIS PLANOS)":{"tipo":"Sp/sadt","cod":"50.00.056-0","valor":52.00},
+  "REAL GRANDEZA (SALVUS E SALUTEM)":{"tipo":"Sp/sadt","cod":"50.00.056-0","valor":45.00},
+  "SAÚDE CAIXA":{"tipo":"Sp/sadt","cod":"50.00.056-0","valor":81.20},
+  "SERPRO":{"tipo":"Sp/sadt","cod":"50.00.056-0","valor":85.05},
+  "SIS SENADO":{"tipo":"Sp/sadt","cod":"17.01.001-1","valor":82.63},
+  "STF-MED (STF)":{"tipo":"Sp/sadt","cod":"5.00.00.56-0","valor":118.44},
+  "TRE SAÚDE":{"tipo":"Sp/sadt","cod":"90.05.022-3","valor":121.34},
+  "TRT SAÚDE":{"tipo":"Sp/sadt","cod":"90.05.022-3","valor":121.34},
+  "TST SAÚDE":{"tipo":"Consulta","cod":"90.05.022-3","valor":121.34},
+  "UNAFISCO SAÚDE (PREMIUM)":{"tipo":"Sp/sadt","cod":"50.00.056-0","valor":73.33},
+};
+
+const CONV_POR_MEDICO = {
+  ANALICE:  ["AFEB BRASAL","AFFEGO","ANAFE SAÚDE","BACEN","BRB (SAÚDE BRB)","CAEME - GO","CAESAN","CAMED","CARE PLUS","CASEC (CODEVASF)","CASEMBRAPA (EMBRAPA)","CNTI","CONAB","EMBRATEL (TELOS)","FAPES (BNDES)","FASCAL","GRAVIA","LIFE EMPRESARIAL","LUMINAR SAÚDE (EVIDA)","OMINT SAÚDE","PF SAÚDE (POLÍCIA FEDERAL)","PLAN ASSISTE (MPU)","PLAS/JMU (STM)","PROASA","PRÓ-SAÚDE (CÂMARA DOS DEPUTADOS)","PRÓ-SAÚDE (TJDFT)","PRÓ-SER (STJ)","PRÓ-SOCIAL (TRF)","REAL GRANDEZA (DEMAIS PLANOS)","REAL GRANDEZA (SALVUS E SALUTEM)","SAÚDE CAIXA","SAÚDE PETROBRAS","SERPRO","SIS SENADO","STF-MED (STF)","TRE SAÚDE","TRT SAÚDE","TST SAÚDE","UNAFISCO SAÚDE (PREMIUM)"],
+  DANIELLE: ["AFEB BRASAL","AFFEGO","ANAFE SAÚDE","BACEN","BRB (SAÚDE BRB)","CAEME - GO","CAESAN","CAMED","CARE PLUS","CASEC (CODEVASF)","CASEMBRAPA (EMBRAPA)","CNTI","CONAB","EMBRATEL (TELOS)","FAPES (BNDES)","FASCAL","GRAVIA","LIFE EMPRESARIAL","LUMINAR SAÚDE (EVIDA)","OMINT SAÚDE","PF SAÚDE (POLÍCIA FEDERAL)","PLAN ASSISTE (MPU)","PLAS/JMU (STM)","PROASA","PRÓ-SAÚDE (CÂMARA DOS DEPUTADOS)","PRÓ-SAÚDE (TJDFT)","PRÓ-SER (STJ)","PRÓ-SOCIAL (TRF)","REAL GRANDEZA (DEMAIS PLANOS)","REAL GRANDEZA (SALVUS E SALUTEM)","SAÚDE CAIXA","SAÚDE PETROBRAS","SERPRO","SIS SENADO","STF-MED (STF)","TRE SAÚDE","TRT SAÚDE","TST SAÚDE","UNAFISCO SAÚDE (PREMIUM)"],
+  FERNANDO: ["AMIL REEMBOLSO","AFEB BRASAL","AFFEGO","ANAFE SAÚDE","BACEN","BRB (SAÚDE BRB)","CAEME - GO","CAESAN","CAMED","CARE PLUS","CASEC (CODEVASF)","CASEMBRAPA (EMBRAPA)","CNTI","CONAB","EMBRATEL (TELOS)","FAPES (BNDES)","FASCAL","GDF SAÚDE","GRAVIA","LIFE EMPRESARIAL","LUMINAR SAÚDE (EVIDA)","NOTRE DAME","OMINT SAÚDE","PF SAÚDE (POLÍCIA FEDERAL)","PLAN ASSISTE (MPU)","PLAS/JMU (STM)","PROASA","PRÓ-SAÚDE (CÂMARA DOS DEPUTADOS)","PRÓ-SAÚDE (TJDFT)","PRÓ-SER (STJ)","PRÓ-SOCIAL (TRF)","REAL GRANDEZA (DEMAIS PLANOS)","REAL GRANDEZA (SALVUS E SALUTEM)","SAÚDE CAIXA","SAÚDE PETROBRAS","SERPRO","SIS SENADO","STF-MED (STF)","TRE SAÚDE","TRT SAÚDE","TST SAÚDE","UNAFISCO SAÚDE (PREMIUM)"],
+  JESSICA:  ["AFEB BRASAL","AFFEGO","ANAFE SAÚDE","BACEN","BRB (SAÚDE BRB)","CAESAN","CARE PLUS","CASEC (CODEVASF)","CASEMBRAPA (EMBRAPA)","CONAB","EMBRATEL (TELOS)","FASCAL","GDF SAÚDE","LIFE EMPRESARIAL","OMINT SAÚDE","PF SAÚDE (POLÍCIA FEDERAL)","PLAN ASSISTE (MPU)","PLAS/JMU (STM)","PROASA","PRÓ-SAÚDE (CÂMARA DOS DEPUTADOS)","PRÓ-SAÚDE (TJDFT)","PRÓ-SOCIAL (TRF)","REAL GRANDEZA (DEMAIS PLANOS)","REAL GRANDEZA (SALVUS E SALUTEM)","SAÚDE CAIXA","SERPRO","SIS SENADO","STF-MED (STF)","TRE SAÚDE","TRT SAÚDE","TST SAÚDE","UNAFISCO SAÚDE (PREMIUM)"],
+  JOAO:     ["SAÚDE CAIXA","SIS SENADO","PRÓ-SAÚDE (CÂMARA DOS DEPUTADOS)","UNAFISCO SAÚDE (PREMIUM)"],
+  JUAN:     ["AMIL REEMBOLSO","AFEB BRASAL","AFFEGO","ANAFE SAÚDE","BACEN","BRB (SAÚDE BRB)","CAEME - GO","CAESAN","CAMED","CARE PLUS","CASEC (CODEVASF)","CASEMBRAPA (EMBRAPA)","CNTI","CONAB","EMBRATEL (TELOS)","FAPES (BNDES)","FASCAL","GDF SAÚDE","GRAVIA","LIFE EMPRESARIAL","LUMINAR SAÚDE (EVIDA)","NOTRE DAME","OMINT SAÚDE","PF SAÚDE (POLÍCIA FEDERAL)","PLAN ASSISTE (MPU)","PLAS/JMU (STM)","PROASA","PRÓ-SAÚDE (CÂMARA DOS DEPUTADOS)","PRÓ-SAÚDE (TJDFT)","PRÓ-SER (STJ)","PRÓ-SOCIAL (TRF)","REAL GRANDEZA (DEMAIS PLANOS)","REAL GRANDEZA (SALVUS E SALUTEM)","SAÚDE CAIXA","SAÚDE PETROBRAS","SERPRO","SIS SENADO","STF-MED (STF)","TRE SAÚDE","TRT SAÚDE","TST SAÚDE","UNAFISCO SAÚDE (PREMIUM)"],
+  PATRICIA: ["AFEB BRASAL","AFFEGO","ANAFE SAÚDE","BACEN","BRB (SAÚDE BRB)","CAEME - GO","CAESAN","CAMED","CARE PLUS","CASEC (CODEVASF)","CASEMBRAPA (EMBRAPA)","CNTI","CONAB","EMBRATEL (TELOS)","FAPES (BNDES)","FASCAL","GRAVIA","LIFE EMPRESARIAL","LUMINAR SAÚDE (EVIDA)","OMINT SAÚDE","PF SAÚDE (POLÍCIA FEDERAL)","PLAN ASSISTE (MPU)","PLAS/JMU (STM)","PROASA","PRÓ-SAÚDE (CÂMARA DOS DEPUTADOS)","PRÓ-SAÚDE (TJDFT)","PRÓ-SER (STJ)","PRÓ-SOCIAL (TRF)","REAL GRANDEZA (DEMAIS PLANOS)","REAL GRANDEZA (SALVUS E SALUTEM)","SAÚDE CAIXA","SAÚDE PETROBRAS","SERPRO","SIS SENADO","STF-MED (STF)","TRE SAÚDE","TRT SAÚDE","TST SAÚDE","UNAFISCO SAÚDE (PREMIUM)"],
+  PAULO:    ["AMIL REEMBOLSO","AFEB BRASAL","AFFEGO","ANAFE SAÚDE","BACEN","BRB (SAÚDE BRB)","CAEME - GO","CAESAN","CAMED","CARE PLUS","CASEC (CODEVASF)","CASEMBRAPA (EMBRAPA)","CNTI","CONAB","EMBRATEL (TELOS)","FAPES (BNDES)","FASCAL","GDF SAÚDE","GRAVIA","LIFE EMPRESARIAL","LUMINAR SAÚDE (EVIDA)","NOTRE DAME","OMINT SAÚDE","PF SAÚDE (POLÍCIA FEDERAL)","PLAN ASSISTE (MPU)","PLAS/JMU (STM)","PROASA","PRÓ-SAÚDE (CÂMARA DOS DEPUTADOS)","PRÓ-SAÚDE (TJDFT)","PRÓ-SER (STJ)","PRÓ-SOCIAL (TRF)","REAL GRANDEZA (DEMAIS PLANOS)","REAL GRANDEZA (SALVUS E SALUTEM)","SAÚDE CAIXA","SAÚDE PETROBRAS","SERPRO","SIS SENADO","STF-MED (STF)","TRE SAÚDE","TRT SAÚDE","TST SAÚDE","UNAFISCO SAÚDE (PREMIUM)"],
+  RAQUELLY: ["AMIL REEMBOLSO","AFEB BRASAL","AFFEGO","ANAFE SAÚDE","BACEN","BRB (SAÚDE BRB)","CAEME - GO","CAESAN","CAMED","CARE PLUS","CASEC (CODEVASF)","CASEMBRAPA (EMBRAPA)","CNTI","CONAB","EMBRATEL (TELOS)","FAPES (BNDES)","FASCAL","GDF SAÚDE","GRAVIA","LIFE EMPRESARIAL","LUMINAR SAÚDE (EVIDA)","NOTRE DAME","OMINT SAÚDE","PF SAÚDE (POLÍCIA FEDERAL)","PLAN ASSISTE (MPU)","PLAS/JMU (STM)","PROASA","PRÓ-SAÚDE (CÂMARA DOS DEPUTADOS)","PRÓ-SAÚDE (TJDFT)","PRÓ-SER (STJ)","PRÓ-SOCIAL (TRF)","REAL GRANDEZA (DEMAIS PLANOS)","REAL GRANDEZA (SALVUS E SALUTEM)","SAÚDE CAIXA","SAÚDE PETROBRAS","SERPRO","SIS SENADO","STF-MED (STF)","TRE SAÚDE","TRT SAÚDE","TST SAÚDE","UNAFISCO SAÚDE (PREMIUM)"],
+  REBECCA:  ["AMIL REEMBOLSO","AFEB BRASAL","AFFEGO","ANAFE SAÚDE","BACEN","BRB (SAÚDE BRB)","CAEME - GO","CAESAN","CAMED","CARE PLUS","CASEC (CODEVASF)","CASEMBRAPA (EMBRAPA)","CNTI","CONAB","EMBRATEL (TELOS)","FAPES (BNDES)","FASCAL","GDF SAÚDE","GRAVIA","LIFE EMPRESARIAL","LUMINAR SAÚDE (EVIDA)","NOTRE DAME","OMINT SAÚDE","PF SAÚDE (POLÍCIA FEDERAL)","PLAN ASSISTE (MPU)","PLAS/JMU (STM)","PROASA","PRÓ-SAÚDE (CÂMARA DOS DEPUTADOS)","PRÓ-SAÚDE (TJDFT)","PRÓ-SER (STJ)","PRÓ-SOCIAL (TRF)","REAL GRANDEZA (DEMAIS PLANOS)","REAL GRANDEZA (SALVUS E SALUTEM)","SAÚDE CAIXA","SAÚDE PETROBRAS","SERPRO","SIS SENADO","STF-MED (STF)","TRE SAÚDE","TRT SAÚDE","TST SAÚDE","UNAFISCO SAÚDE (PREMIUM)"],
+  WILLIAN:  ["AFEB BRASAL","AFFEGO","ANAFE SAÚDE","BACEN","BRB (SAÚDE BRB)","CAESAN","CARE PLUS","CASEC (CODEVASF)","CASEMBRAPA (EMBRAPA)","CONAB","EMBRATEL (TELOS)","FASCAL","GDF SAÚDE","LIFE EMPRESARIAL","OMINT SAÚDE","PF SAÚDE (POLÍCIA FEDERAL)","PLAN ASSISTE (MPU)","PLAS/JMU (STM)","PROASA","PRÓ-SAÚDE (CÂMARA DOS DEPUTADOS)","PRÓ-SAÚDE (TJDFT)","PRÓ-SOCIAL (TRF)","REAL GRANDEZA (DEMAIS PLANOS)","REAL GRANDEZA (SALVUS E SALUTEM)","SAÚDE CAIXA","SERPRO","SIS SENADO","STF-MED (STF)","TRE SAÚDE","TRT SAÚDE","TST SAÚDE","UNAFISCO SAÚDE (PREMIUM)"],
+};
+
+const TRIAGEM_PADRAO = [
+  {cod:"41301048", desc:"Bioimpedanciometria (ambulatorial) exame", qty:1},
+  {cod:"20101090", desc:"Avaliação da Composição Corporal por Antropometria", qty:1},
+  {cod:"20101023", desc:"Análise da proporcionalidade cineantropométrica", qty:1},
+  {cod:"41401514", desc:"Oximetria não invasiva", qty:1},
+  {cod:"20101104", desc:"Avaliação da composição corporal por bioimpedanciometria", qty:1},
+  {cod:"41501187", desc:"Circunferência abdominal", qty:1},
+  {cod:"20101074", desc:"Avaliação Nutrológica (inclui consulta)", qty:1},
+  {cod:"41401026", desc:"Avaliação da função muscular (por movimento) com equipamento mecânico (dinamometria/módulos de cargas)", qty:2},
+  {cod:"41301404", desc:"Avaliação da função muscular por movimento manual (por membro)", qty:2},
+];
+
+const EXCECOES = {
+  "SAÚDE CAIXA":{ remover:["41301404"], alterar:{"41401026":4}, msgs:["Não aceita: 41301404","41401026: solicitar QTD 4"] },
+  "PF SAÚDE (POLÍCIA FEDERAL)":{ remover:["20101090","20101074"], msgs:["Não pedir 20101090 (já inclui consulta)","Não pedir 20101074 (já inclui consulta)"] },
+  "PRÓ-SER (STJ)":{ remover:["20101074"], msgs:["Não aceita: 20101074"] },
+  "GDF SAÚDE":{ remover:["41501187","41301404"], alterar:{"41401026":"max2"}, msgs:["Não aceita: 41501187","Não aceita: 41301404","41401026: aceita somente QTD 2 por dia — solicitar restante em outro dia"] },
+};
+
+function onMedicoChange() {
+  const key = document.getElementById('sel-medico').value;
+  hide('card-especialidade-danielle'); hide('card-convenio');
+  hide('area-resultado'); hide('area-particular'); hide('area-alergia-particular');
+  document.getElementById('sel-especialidade').value = '';
+  document.getElementById('alert-alergia-particular').classList.add('hidden');
+  if (!key) return;
+
+  if (key === 'DANIELLE') {
+    show('card-especialidade-danielle');
+    return;
+  }
+
+  carregarConvenios(key);
+}
+
+function onEspecialidadeChange() {
+  const esp = document.getElementById('sel-especialidade').value;
+  hide('card-convenio'); hide('area-resultado'); hide('area-particular'); hide('area-alergia-particular');
+
+  const alertAlergia = document.getElementById('alert-alergia-particular');
+  if (esp === 'alergia') {
+    alertAlergia.classList.remove('hidden');
+    show('area-alergia-particular');
+    return;
+  }
+  alertAlergia.classList.add('hidden');
+
+  if (esp === 'nutrologo') {
+    carregarConvenios('DANIELLE');
+  }
+}
+
+function carregarConvenios(key) {
+  const med = MEDICOS[key];
+  const sel = document.getElementById('sel-convenio');
+  const isDanielle = key === 'DANIELLE';
+  document.getElementById('badge-convenio').textContent = isDanielle ? '3' : '2';
+  sel.innerHTML = '<option value="">— Selecione o convênio —</option>';
+  sel.innerHTML += `<option value="PARTICULAR">💳 PARTICULAR — R$ ${med.valorPart.toFixed(2).replace('.',',')}</option>`;
+  CONV_POR_MEDICO[key].forEach(c => { sel.innerHTML += `<option value="${c}">${c}</option>`; });
+  show('card-convenio');
+}
+
+function onConvenioChange() {
+  const medKey = document.getElementById('sel-medico').value;
+  const conv = document.getElementById('sel-convenio').value;
+  hide('area-resultado'); hide('area-particular'); hide('area-alergia-particular');
+  if (!conv || !medKey) return;
+  const med = MEDICOS[medKey];
+
+  if (conv === 'PARTICULAR') {
+    document.getElementById('part-valor').textContent = `R$ ${med.valorPart.toFixed(2).replace('.',',')}`;
+    toggleClass('part-danielle', 'hidden', !med.danielle);
+    show('area-particular');
+    return;
+  }
+
+  const tbl = med.tipo === 'nutricionista' ? CONV_NUTRI : CONV_NUT;
+  const d = tbl[conv];
+  if (!d) return;
+
+  document.getElementById('res-guia').textContent = d.tipo;
+  document.getElementById('res-cod').textContent = d.cod;
+  document.getElementById('res-valor').textContent = d.valor > 0 ? `R$ ${d.valor.toFixed(2).replace('.',',')}` : 'Verificar';
+
+  const idadeWarn = document.getElementById('alerta-idade');
+  if (med.idadeMin) { document.getElementById('idade-txt').textContent = med.idadeMin; show('alerta-idade'); }
+  else { hide('alerta-idade'); }
+
+  toggleClass('solicitante-bar', 'hidden', med.tipo !== 'nutricionista');
+
+  const exc = EXCECOES[conv];
+  if (exc) {
+    document.getElementById('excecao-lista').innerHTML = exc.msgs.map(m => `<li>${m}</li>`).join('');
+    show('alert-excecao');
+  } else { hide('alert-excecao'); }
+
+  renderTriagem(conv, exc, med.geriatria);
+  show('area-resultado');
+  document.getElementById('area-resultado').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function renderTriagem(conv, exc, isGeriatria) {
+  const tbody = document.getElementById('triagem-body');
+  tbody.innerHTML = '';
+  let codigos = JSON.parse(JSON.stringify(TRIAGEM_PADRAO));
+  if (exc) {
+    if (exc.remover) codigos = codigos.filter(c => !exc.remover.includes(c.cod));
+    if (exc.alterar) codigos.forEach(c => {
+      if (exc.alterar[c.cod] !== undefined) {
+        const v = exc.alterar[c.cod];
+        c.qty = v === 'max2' ? 2 : v;
+        if (v === 'max2') c.obs = 'Solicitar restante em outro dia';
+      }
+    });
+  }
+  if (isGeriatria) codigos.push({cod:"20101236", desc:"Avaliação Geriátrica Ampla", qty:1, extra:true});
+
+  codigos.forEach(c => {
+    const tr = document.createElement('tr');
+    if (c.extra) tr.className = 'row-geriatria';
+    const statusHtml = c.extra
+      ? `<span class="status-geriatria">★ Geriátrico</span>`
+      : `<span class="status-auth">⏳ Necessário autorização</span>`;
+    tr.innerHTML = `
+      <td class="td-code">${c.cod}</td>
+      <td class="td-desc">${c.desc}${c.obs ? `<div class="td-obs">⚠ ${c.obs}</div>` : ''}</td>
+      <td><span class="qty-pill">x${c.qty}</span></td>
+      <td>${statusHtml}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function copiarTriagem() {
+  const rows = document.querySelectorAll('#triagem-body tr');
+  let txt = '';
+  rows.forEach(r => {
+    const tds = r.querySelectorAll('td');
+    const desc = tds[1].querySelector('.td-desc') ? tds[1].textContent.trim().split('\n')[0].trim() : tds[1].textContent.trim();
+    const qty = tds[2].textContent.replace('x','').trim();
+    txt += `${tds[0].textContent.trim()} — ${desc} (Qtd: ${qty})\n`;
+  });
+  navigator.clipboard.writeText(txt.trim()).then(() => toast('Códigos de triagem copiados!'));
+}
+
+function copiarConsulta() {
+  const cod = document.getElementById('res-cod').textContent;
+  navigator.clipboard.writeText(cod).then(() => toast(`Código de consulta copiado: ${cod}`));
+}
+
+function show(id) { document.getElementById(id).classList.remove('hidden'); }
+function hide(id) { document.getElementById(id).classList.add('hidden'); }
+function toggleClass(id, cls, condition) {
+  condition ? document.getElementById(id).classList.add(cls) : document.getElementById(id).classList.remove(cls);
+}
+
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.style.opacity = '1';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.style.opacity = '0'; }, 2800);
+}
+
+
+const ALL_TABS = ['consulta','medicacoes','ultrassom','laboratorio','polissonografia'];
+
+function switchTab(tab) {
+  ALL_TABS.forEach(t => {
+    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+    document.getElementById('tabbtn-' + t).classList.toggle('active', t === tab);
+  });
+}
+
+const CONV_ULTRASSOM = [
+  "AFEB BRASAL","AFFEGO","ANAFE SAÚDE","BACEN","CAEME - GO","CAESAN","CAMED",
+  "CARE PLUS","CASEC (CODEVASF)","CASEMBRAPA (EMBRAPA)","CONAB","EMBRATEL (TELOS)",
+  "FAPES (BNDES)","FASCAL","GDF SAÚDE","GRAVIA","OMINT SAÚDE",
+  "PF SAÚDE (POLÍCIA FEDERAL)","PLAN ASSISTE (MPU)","PLAS/JMU (STM)","PROASA",
+  "PRÓ-SAÚDE (CÂMARA DOS DEPUTADOS)","PRÓ-SAÚDE (TJDFT)","PRÓ-SOCIAL (TRF)",
+  "REAL GRANDEZA (DEMAIS PLANOS)","SAÚDE CAIXA","SAÚDE PETROBRAS",
+  "SERPRO","SIS SENADO","STF-MED (STF)","TRT SAÚDE","UNAFISCO SAÚDE (PREMIUM)"
+];
+
+const CONV_LABORATORIO = [
+  "AFEB BRASAL","AFFEGO","ANAFE SAÚDE","BACEN","CAEME - GO","CAESAN","CAMED",
+  "CARE PLUS","CASEC (CODEVASF)","CASEMBRAPA (EMBRAPA)","CONAB","EMBRATEL (TELOS)",
+  "FAPES (BNDES)","FASCAL","GDF SAÚDE","GRAVIA","NOTRE DAME","OMINT SAÚDE",
+  "PF SAÚDE (POLÍCIA FEDERAL)","PROASA","PRÓ-SAÚDE (CÂMARA DOS DEPUTADOS)",
+  "PRÓ-SAÚDE (TJDFT)","PRÓ-SOCIAL (TRF)","REAL GRANDEZA (DEMAIS PLANOS)",
+  "SAÚDE CAIXA","SERPRO","SIS SENADO","STF-MED (STF)","TRT SAÚDE",
+  "UNAFISCO SAÚDE (PREMIUM)","SAÚDE PETROBRAS"
+];
+
+const CONV_LAB_ESPECIAIS = ["BRADESCO SAÚDE","GEAP","SUL AMÉRICA"];
+
+const OBS_LAB_ESPECIAL = `<strong>⚠ Atenção:</strong> Para este convênio, a solicitação de autorização deve ser realizada por meio do grupo <strong>"Exato&Pantheon - Autorizações"</strong>.<br><br>
+É necessário encaminhar as seguintes informações:<br>
+<ul style="padding-left:18px;margin-top:6px;line-height:2">
+  <li>Data e horário do agendamento</li>
+  <li>CEP e endereço completo do paciente</li>
+  <li>Pedido médico</li>
+  <li>Carteirinha do convênio</li>
+  <li>Documento de identificação do paciente</li>
+</ul>`;
+
+const CONV_POLISSONOGRAFIA = [
+  "AFEB BRASAL","AFFEGO","ANAFE SAÚDE","BACEN","CAEME - GO","CAESAN","CAMED",
+  "CARE PLUS","CASEC (CODEVASF)","CASEMBRAPA (EMBRAPA)","CONAB","EMBRATEL (TELOS)",
+  "FAPES (BNDES)","FASCAL","GDF SAÚDE","GRAVIA","NOTRE DAME","OMINT SAÚDE",
+  "PF SAÚDE (POLÍCIA FEDERAL)","PLAN ASSISTE (MPU)","PLAS/JMU (STM)","PROASA",
+  "PRÓ-SAÚDE (CÂMARA DOS DEPUTADOS)","PRÓ-SAÚDE (TJDFT)","PRÓ-SOCIAL (TRF)",
+  "REAL GRANDEZA (DEMAIS PLANOS)","SAÚDE CAIXA","SAÚDE PETROBRAS",
+  "SERPRO","SIS SENADO","STF-MED (STF)","TRT SAÚDE","UNAFISCO SAÚDE (PREMIUM)"
+];
+
+function buildConvList(listId, countId, items, especiais, obsHtml) {
+  const ul = document.getElementById(listId);
+  const allItems = especiais ? [...items, ...especiais] : [...items];
+  const sorted = allItems.sort((a,b) => a.localeCompare(b,'pt'));
+  sorted.forEach((c, i) => {
+    const isEspecial = especiais && especiais.includes(c);
+    const li = document.createElement('li');
+    li.style.cursor = isEspecial ? 'pointer' : 'default';
+    if (isEspecial) {
+      li.innerHTML = c + ' <span style="font-size:10px;background:#FFF8E6;color:#7A5B00;border:1px solid #F5C842;border-radius:99px;padding:1px 7px;font-weight:500;vertical-align:middle">Atenção</span>';
+      li.style.color = '#5B2D8E';
+      li.style.fontWeight = '500';
+      li.title = 'Clique para ver a observação';
+      li.addEventListener('click', () => showObsModal(c, obsHtml));
+    } else {
+      li.textContent = c;
+    }
+    li.dataset.name = c;
+    ul.appendChild(li);
+  });
+  document.getElementById(countId).textContent = sorted.length + ' convênios aceitos';
+}
+
+function showObsModal(nome, html) {
+  let modal = document.getElementById('obs-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'obs-modal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px';
+    modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML = '';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:white;border-radius:12px;padding:24px 28px;max-width:500px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,0.18);font-size:13px;line-height:1.6;color:#222;max-height:90vh;overflow-y:auto';
+  box.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <span style="font-weight:600;font-size:15px;color:#5B2D8E">${nome}</span>
+      <button onclick="document.getElementById('obs-modal').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#9E9E9E;line-height:1">×</button>
+    </div>
+    <div style="background:#FFF8E6;border:1px solid #F5C842;border-radius:8px;padding:14px 16px;color:#5a4000">${html}</div>
+    <button onclick="document.getElementById('obs-modal').remove()" style="margin-top:16px;width:100%;padding:10px;background:#5B2D8E;color:white;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">Fechar</button>
+  `;
+  modal.appendChild(box);
+}
+
+function filtrarConv(tipo, q) {
+  const ul = document.getElementById('list-' + tipo);
+  const countEl = document.getElementById('count-' + tipo);
+  const items = ul.querySelectorAll('li');
+  let visible = 0;
+  items.forEach(li => {
+    const name = (li.dataset.name || li.textContent).toLowerCase();
+    const match = name.includes(q.toLowerCase());
+    li.classList.toggle('hidden-item', !match);
+    if (match) visible++;
+  });
+  countEl.textContent = visible + ' convênio' + (visible !== 1 ? 's' : '') + ' encontrado' + (visible !== 1 ? 's' : '');
+}
+
+buildConvList('list-ultrassom', 'count-ultrassom', CONV_ULTRASSOM);
+buildConvList('list-laboratorio', 'count-laboratorio', CONV_LABORATORIO, CONV_LAB_ESPECIAIS, OBS_LAB_ESPECIAL);
+buildConvList('list-polissonografia', 'count-polissonografia', CONV_POLISSONOGRAFIA);
+
+
+const MEDICACOES = {
+  tirzepatida: [
+    {nome:"Ampola Tirzepatida", preco:5000},
+    {nome:"Tirzepatida 2,5mg", preco:400},
+    {nome:"Tirzepatida 5mg", preco:640},
+    {nome:"Tirzepatida 7,5mg", preco:830},
+    {nome:"Tirzepatida 10mg", preco:1030},
+  ],
+  semaglutida: [
+    {nome:"Ampola Semaglutida", preco:1200},
+    {nome:"Semaglutida 10UI", preco:80},
+    {nome:"Semaglutida 20UI", preco:120},
+    {nome:"Semaglutida 30UI", preco:180},
+    {nome:"Semaglutida 40UI", preco:220},
+  ],
+  caneta: [
+    {nome:"Caneta Mounjaro", preco:8000},
+  ],
+  geral: [
+    {nome:"Ácido alfa lipoico 300mg", preco:350},
+    {nome:"Ácido alfa lipoico 600mg", preco:420},
+    {nome:"Cipionato de testosterona", preco:250},
+    {nome:"Coenzima Q10 (IM)", preco:250},
+    {nome:"Complexo B (EV)", preco:350},
+    {nome:"Complexo B (IM)", preco:250},
+    {nome:"Curcumina (EV)", preco:350},
+    {nome:"Curcumina (IM)", preco:250},
+    {nome:"HBM (EV)", preco:350},
+    {nome:"HMB (IM)", preco:250},
+    {nome:"Mix de testosterona", preco:250},
+    {nome:"Morosil (IM)", preco:250},
+    {nome:"Nandrolona", preco:250},
+    {nome:"Noripurum 100mg (EV)", preco:350},
+    {nome:"Pool de aminoácidos (EV)", preco:350},
+    {nome:"PQQ (EV)", preco:350},
+    {nome:"PQQ (IM)", preco:250},
+    {nome:"Trio metilador (EV)", preco:380},
+    {nome:"Trio metilador (IM)", preco:300},
+    {nome:"Vitamina ADEK (IM)", preco:300},
+    {nome:"Vitamina B12 (EV)", preco:350},
+    {nome:"Vitamina B12 (IM)", preco:250},
+    {nome:"Vitamina C (EV)", preco:350},
+    {nome:"Vitamina C (IM)", preco:250},
+    {nome:"Vitamina D (IM)", preco:250},
+  ],
+};
+
+const medQtd = {};
+
+function buildMedList(grupo, containerId) {
+  const el = document.getElementById(containerId);
+  MEDICACOES[grupo].forEach((m, i) => {
+    const key = grupo + '_' + i;
+    medQtd[key] = 0;
+
+    const div = document.createElement('div');
+    div.className = 'med-item';
+    div.id = 'med-item-' + key;
+
+    const chk = document.createElement('input');
+    chk.type = 'checkbox';
+    chk.id = 'chk-' + key;
+    chk.addEventListener('change', () => toggleMed(key));
+
+    const lbl = document.createElement('label');
+    lbl.htmlFor = 'chk-' + key;
+    lbl.className = 'med-item-name';
+    lbl.style.cursor = 'pointer';
+    lbl.textContent = m.nome;
+
+    const qtyWrap = document.createElement('div');
+    qtyWrap.className = 'med-qty hidden';
+    qtyWrap.id = 'qty-wrap-' + key;
+
+    const btnMinus = document.createElement('button');
+    btnMinus.textContent = '−';
+    btnMinus.addEventListener('click', (e) => { e.preventDefault(); changeQty(key, -1); });
+
+    const qtySpan = document.createElement('span');
+    qtySpan.id = 'qty-val-' + key;
+    qtySpan.textContent = '1';
+
+    const btnPlus = document.createElement('button');
+    btnPlus.textContent = '+';
+    btnPlus.addEventListener('click', (e) => { e.preventDefault(); changeQty(key, 1); });
+
+    qtyWrap.appendChild(btnMinus);
+    qtyWrap.appendChild(qtySpan);
+    qtyWrap.appendChild(btnPlus);
+
+    const priceSpan = document.createElement('span');
+    priceSpan.className = 'med-item-price';
+    priceSpan.textContent = 'R$ ' + m.preco.toLocaleString('pt-BR', {minimumFractionDigits:2});
+
+    div.appendChild(chk);
+    div.appendChild(lbl);
+    div.appendChild(qtyWrap);
+    div.appendChild(priceSpan);
+    el.appendChild(div);
+  });
+}
+
+function toggleMed(key) {
+  const chk = document.getElementById('chk-' + key);
+  const item = document.getElementById('med-item-' + key);
+  const qtyWrap = document.getElementById('qty-wrap-' + key);
+  if (chk.checked) {
+    medQtd[key] = 1;
+    item.classList.add('selected');
+    qtyWrap.classList.remove('hidden');
+  } else {
+    medQtd[key] = 0;
+    item.classList.remove('selected');
+    qtyWrap.classList.add('hidden');
+    document.getElementById('qty-val-' + key).textContent = '1';
+  }
+  atualizarResumo();
+}
+
+function changeQty(key, delta) {
+  const cur = medQtd[key] || 1;
+  const novo = Math.max(1, cur + delta);
+  medQtd[key] = novo;
+  document.getElementById('qty-val-' + key).textContent = novo;
+  atualizarResumo();
+}
+
+function getMedInfo(key) {
+  const parts = key.split('_');
+  const grupo = parts[0];
+  const idx = parseInt(parts[1]);
+  return MEDICACOES[grupo][idx];
+}
+
+function toggleItens() {
+  const itens = document.getElementById('resumo-itens');
+  const arrow = document.getElementById('toggle-arrow');
+  const isOpen = itens.classList.contains('expanded');
+  itens.classList.toggle('expanded', !isOpen);
+  arrow.classList.toggle('open', !isOpen);
+}
+
+function atualizarResumo() {
+  const selecionados = Object.keys(medQtd).filter(k => medQtd[k] > 0);
+  const vazio = document.getElementById('resumo-vazio');
+  const conteudo = document.getElementById('resumo-conteudo');
+
+  if (selecionados.length === 0) {
+    vazio.classList.remove('hidden');
+    conteudo.classList.add('hidden');
+    return;
+  }
+  vazio.classList.add('hidden');
+  conteudo.classList.remove('hidden');
+
+  let total = 0;
+  const itensHtml = selecionados.map(k => {
+    const m = getMedInfo(k);
+    const qty = medQtd[k];
+    const sub = m.preco * qty;
+    total += sub;
+    return '<div class="resumo-item-row"><span>' + m.nome + (qty > 1 ? ' \xD7' + qty : '') + '</span><span>R$ ' + sub.toLocaleString('pt-BR',{minimumFractionDigits:2}) + '</span></div>';
+  }).join('');
+
+  document.getElementById('resumo-count').textContent = selecionados.length;
+  document.getElementById('resumo-itens').innerHTML = itensHtml;
+  document.getElementById('resumo-total').textContent = 'R$ ' + total.toLocaleString('pt-BR',{minimumFractionDigits:2});
+
+  // Parcelamento
+  const grid = document.getElementById('parcelas-grid');
+  if (total < 1000) {
+    grid.innerHTML = '<p class="sem-parcela-msg">Parcelamento disponível a partir de R$ 1.000,00.</p>';
+  } else {
+    // Regras: até R$1999,99 → máx 4x sem juros; R$2000+ → máx 6x sem juros
+    // Acima do limite sem juros: 5x com 6,13% e 6x com 6,84% (apenas se total < 2000)
+    const maxSemJuros = total >= 2000 ? 6 : 4;
+    const taxas = {5: 0.0613, 6: 0.0684};
+    let tiles = '';
+
+    for (let p = 1; p <= maxSemJuros; p++) {
+      const val = total / p;
+      tiles += '<div class="parcela-tile">' +
+        '<div class="p-label">' + p + '\xD7 sem juros</div>' +
+        '<div class="p-val">R$ ' + val.toLocaleString('pt-BR',{minimumFractionDigits:2}) + '</div>' +
+        '<div class="p-total">Total: R$ ' + total.toLocaleString('pt-BR',{minimumFractionDigits:2}) + '</div>' +
+        '</div>';
+    }
+
+    // Se total < 2000, mostrar 5x e 6x com juros da maquininha
+    if (total < 2000) {
+      [5, 6].forEach(p => {
+        const taxa = taxas[p];
+        const totalComJuros = total * (1 + taxa);
+        const val = totalComJuros / p;
+        tiles += '<div class="parcela-tile com-juros">' +
+          '<div class="p-label">' + p + '\xD7 c/ juros (' + (taxa * 100).toFixed(2) + '%)</div>' +
+          '<div class="p-val">R$ ' + val.toLocaleString('pt-BR',{minimumFractionDigits:2}) + '</div>' +
+          '<div class="p-total">Total: R$ ' + totalComJuros.toLocaleString('pt-BR',{minimumFractionDigits:2}) + '</div>' +
+          '</div>';
+      });
+    }
+
+    grid.innerHTML = '<div class="parcelas-grid">' + tiles + '</div>';
+  }
+
+  // Descontos
+  const pix = total * 0.95;
+  const gerente = total * 0.90;
+  document.getElementById('val-pix').textContent = 'R$ ' + pix.toLocaleString('pt-BR',{minimumFractionDigits:2});
+  document.getElementById('val-gerente').textContent = 'R$ ' + gerente.toLocaleString('pt-BR',{minimumFractionDigits:2});
+}
+
+function limparMedicacoes() {
+  Object.keys(medQtd).forEach(k => {
+    medQtd[k] = 0;
+    const chk = document.getElementById('chk-' + k);
+    if (chk) chk.checked = false;
+    const item = document.getElementById('med-item-' + k);
+    if (item) item.classList.remove('selected');
+    const qw = document.getElementById('qty-wrap-' + k);
+    if (qw) qw.classList.add('hidden');
+    const qv = document.getElementById('qty-val-' + k);
+    if (qv) qv.textContent = '1';
+  });
+  atualizarResumo();
+}
+
+buildMedList('tirzepatida', 'med-list-tirzepatida');
+buildMedList('semaglutida', 'med-list-semaglutida');
+buildMedList('caneta', 'med-list-caneta');
+buildMedList('geral', 'med-list-geral');
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) + ' · ' + now.toLocaleDateString('pt-BR', {weekday:'short', day:'2-digit', month:'2-digit'});
+}
+updateClock();
+setInterval(updateClock, 1000);
+</script>
+</body>
+</html>
