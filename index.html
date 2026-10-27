@@ -1106,7 +1106,7 @@ function carregarConvenios(key) {
   document.getElementById('badge-convenio').textContent = isDanielle ? '3' : '2';
   sel.innerHTML = '<option value="">— Selecione o convênio —</option>';
   sel.innerHTML += `<option value="PARTICULAR">💳 PARTICULAR — R$ ${med.valorPart.toFixed(2).replace('.',',')}</option>`;
-  CONV_POR_MEDICO[key].forEach(c => { sel.innerHTML += `<option value="${c}">${c}</option>`; });
+  [...CONV_POR_MEDICO[key]].sort((a,b) => a.localeCompare(b,'pt')).forEach(c => { sel.innerHTML += `<option value="${c}">${c}</option>`; });
   show('card-convenio');
 }
 
